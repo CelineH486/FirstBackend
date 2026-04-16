@@ -1,31 +1,328 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <title>簡單計算機</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三層計算機</title>
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f2f5;
+    font-family: Arial, sans-serif;
+}
+
+.calculator {
+    background: white;
+    padding: 36px;
+    border-radius: 22px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 28px;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.left-panel,
+.right-panel {
+    width: 210px;
+}
+
+.middle-panel {
+    min-width: 340px;
+}
+
+.divider {
+    width: 1px;
+    height: 290px;
+    background: #e8e8e8;
+}
+
+h2 {
+    margin: 0;
+    font-size: 16px;
+    color: #555;
+    font-weight: bold;
+}
+
+input[type="text"] {
+    width: 160px;
+    padding: 12px 14px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    outline: none;
+    text-align: right;
+}
+
+input[type="text"]:focus {
+    border-color: #4a90e2;
+}
+
+input[readonly] {
+    background: #f9f9f9;
+    color: #555;
+    font-weight: bold;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 74px);
+    gap: 12px;
+}
+
+button {
+    height: 74px;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+button span.name {
+    font-size: 11px;
+    font-weight: normal;
+}
+
+.num { background: #4f8dd8; }
+.num:hover { background: #3d78bf; }
+
+.op { background: #f0a500; }
+.op:hover { background: #cf8d00; }
+
+.func { background: #de6b6b; }
+.func:hover { background: #c95757; }
+
+.equal { background: #f0a500; }
+.equal:hover { background: #cf8d00; }
+
+.top-wide {
+    grid-column: span 2;
+}
+
+.history-btn {
+    width: 160px;
+    height: 50px;
+    background: #6c757d;
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+.history-btn:hover {
+    background: #555d64;
+}
+
+#historyPanel {
+    width: 180px;
+    height: 180px;
+    overflow-y: auto;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    background: #fafafa;
+    font-size: 14px;
+    color: #333;
+    display: none;
+}
+
+.history-item {
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    word-break: break-word;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+</style>
 </head>
+
 <body>
 
-<h1>簡單計算機</h1>
+<div class="calculator">
 
-<input type="text" id="num1" placeholder="數字1">
-<input type="text" id="num2" placeholder="數字2">
+    <!-- 左邊：輸入框 -->
+    <div class="panel left-panel">
+        <h2>輸入數字 1</h2>
+        <input type="text" id="num1" placeholder="0" readonly>
 
-<br><br>
+        <h2>輸入數字 2</h2>
+        <input type="text" id="num2" placeholder="0" readonly>
+    </div>
 
-<button onclick="calc('add')">加</button>
-<button onclick="calc('minus')">減</button>
-<button onclick="calc('multiply')">乘</button>
-<button onclick="calc('divide')">除</button>
+    <div class="divider"></div>
 
-<br><br>
+    <!-- 中間：鍵盤 -->
+    <div class="panel middle-panel">
+        <h2>運算</h2>
 
-<h3 id="result">結果：</h3>
+        <div class="buttons">
+            <button class="func top-wide" onclick="clearAll()">
+                <div>C</div>
+                <span class="name">clear</span>
+            </button>
+
+            <button class="func top-wide" onclick="backspace()">
+                <div>⌫</div>
+                <span class="name">back</span>
+            </button>
+
+            <button class="num" onclick="inputNum('7')">7</button>
+            <button class="num" onclick="inputNum('8')">8</button>
+            <button class="num" onclick="inputNum('9')">9</button>
+            <button class="op" onclick="setOp('divide')">
+                <div>÷</div>
+                <span class="name">divide</span>
+            </button>
+
+            <button class="num" onclick="inputNum('4')">4</button>
+            <button class="num" onclick="inputNum('5')">5</button>
+            <button class="num" onclick="inputNum('6')">6</button>
+            <button class="op" onclick="setOp('multiply')">
+                <div>×</div>
+                <span class="name">multiply</span>
+            </button>
+
+            <button class="num" onclick="inputNum('1')">1</button>
+            <button class="num" onclick="inputNum('2')">2</button>
+            <button class="num" onclick="inputNum('3')">3</button>
+            <button class="op" onclick="setOp('minus')">
+                <div>−</div>
+                <span class="name">minus</span>
+            </button>
+
+            <button class="num" onclick="inputNum('0')">0</button>
+            <button class="num" onclick="inputDot()">.</button>
+            <button class="equal" onclick="calculate()">
+                <div>=</div>
+                <span class="name">equal</span>
+            </button>
+            <button class="op" onclick="setOp('add')">
+                <div>+</div>
+                <span class="name">add</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 右邊：算式 / 結果 / 歷史 -->
+    <div class="panel right-panel">
+        <h2>算式</h2>
+        <input type="text" id="formula" placeholder="算式顯示" readonly>
+
+        <h2>結果</h2>
+        <input type="text" id="result" placeholder="結果" readonly>
+
+        <button class="history-btn" onclick="toggleHistory()">歷史紀錄</button>
+        <div id="historyPanel">尚無紀錄</div>
+    </div>
+
+</div>
 
 <script>
-async function calc(op) {
-    let n1 = document.getElementById("num1").value;
-    let n2 = document.getElementById("num2").value;
+let num1 = "";
+let num2 = "";
+let current = "num1";
+let op = null;
+
+function symbol(o) {
+    return {
+        add: "+",
+        minus: "−",
+        multiply: "×",
+        divide: "÷"
+    }[o];
+}
+
+function syncInputs() {
+    document.getElementById("num1").value = num1;
+    document.getElementById("num2").value = num2;
+}
+
+function inputNum(n) {
+    if (current === "num1") {
+        num1 += n;
+    } else {
+        num2 += n;
+    }
+    syncInputs();
+    updateFormula();
+}
+
+function inputDot() {
+    if (current === "num1" && !num1.includes(".")) {
+        num1 = num1 === "" ? "0." : num1 + ".";
+    } else if (current === "num2" && !num2.includes(".")) {
+        num2 = num2 === "" ? "0." : num2 + ".";
+    }
+    syncInputs();
+    updateFormula();
+}
+
+function setOp(o) {
+    if (num1 === "") return;
+    op = o;
+    current = "num2";
+    updateFormula();
+}
+
+function updateFormula() {
+    const formulaBox = document.getElementById("formula");
+
+    if (!op) {
+        formulaBox.value = num1;
+        return;
+    }
+
+    formulaBox.value = `${num1} ${symbol(op)} ${num2}`;
+}
+
+function clearAll() {
+    num1 = "";
+    num2 = "";
+    op = null;
+    current = "num1";
+    syncInputs();
+    document.getElementById("formula").value = "";
+    document.getElementById("result").value = "";
+}
+
+function backspace() {
+    if (current === "num1") {
+        num1 = num1.slice(0, -1);
+    } else {
+        num2 = num2.slice(0, -1);
+    }
+    syncInputs();
+    updateFormula();
+}
+
+async function calculate() {
+    if (!op || num1 === "" || num2 === "") {
+        document.getElementById("result").value = "請完成輸入";
+        return;
+    }
 
     const response = await fetch("/api/" + op, {
         method: "POST",
@@ -33,14 +330,58 @@ async function calc(op) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            num1: n1,
-            num2: n2
+            num1: num1,
+            num2: num2
         })
     });
 
     const data = await response.json();
-    document.getElementById("result").innerText = "結果：" + data.result;
+
+    document.getElementById("formula").value = `${num1} ${symbol(op)} ${num2} =`;
+    document.getElementById("result").value = data.result;
+
+    const panel = document.getElementById("historyPanel");
+    if (panel.style.display === "block") {
+        loadHistory();
+    }
 }
+
+function toggleHistory() {
+    const panel = document.getElementById("historyPanel");
+
+    if (panel.style.display === "none" || panel.style.display === "") {
+        panel.style.display = "block";
+        loadHistory();
+    } else {
+        panel.style.display = "none";
+    }
+}
+
+async function loadHistory() {
+    const response = await fetch("/api/history");
+    const data = await response.json();
+
+    const panel = document.getElementById("historyPanel");
+
+    if (data.length === 0) {
+        panel.innerHTML = "尚無紀錄";
+        return;
+    }
+
+    panel.innerHTML = "";
+
+    for (let i = data.length - 1; i >= 0; i--) {
+        const item = data[i];
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerText = `${item.num1} ${symbol(item.op)} ${item.num2} = ${item.result}`;
+        panel.appendChild(div);
+    }
+}
+
+window.onload = function () {
+    syncInputs();
+};
 </script>
 
 </body>
