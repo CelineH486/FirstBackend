@@ -1,9 +1,15 @@
 from flask import Flask, render_template, request, jsonify
 
+from pymongo import MongoClient
+
 app = Flask(__name__)
 
-# 用來暫時儲存歷史紀錄
-history = []
+client = MongoClient("mongodb://admin:123456@localhost:27017")
+
+# 建立資料庫 & collection
+db = client["calculator_db"]
+collection = db["history"]
+
 
 
 @app.route("/", methods=["GET"])
@@ -18,12 +24,12 @@ def add():
     num2 = float(data["num2"])
     result = num1 + num2
 
-    history.append({
-        "num1": num1,
-        "num2": num2,
-        "op": "add",
-        "result": result
-    })
+    collection.insert_one({
+    "num1": num1,
+    "num2": num2,
+    "op": "add",
+    "result": result
+})
 
     return jsonify({"result": result})
 
@@ -35,12 +41,12 @@ def minus():
     num2 = float(data["num2"])
     result = num1 - num2
 
-    history.append({
-        "num1": num1,
-        "num2": num2,
-        "op": "minus",
-        "result": result
-    })
+    collection.insert_one({
+    "num1": num1,
+    "num2": num2,
+    "op": "minus",
+    "result": result
+})
 
     return jsonify({"result": result})
 
@@ -52,7 +58,7 @@ def multiply():
     num2 = float(data["num2"])
     result = num1 * num2
 
-    history.append({
+    collection.insert_one({
         "num1": num1,
         "num2": num2,
         "op": "multiply",
@@ -73,7 +79,7 @@ def divide():
     else:
         result = num1 / num2
 
-    history.append({
+    collection.insert_one({
         "num1": num1,
         "num2": num2,
         "op": "divide",
@@ -85,7 +91,8 @@ def divide():
 
 @app.route("/api/history", methods=["GET"])
 def get_history():
-    return jsonify(history)
+    data = list(collection.find({}, {"_id": 0}))
+    return jsonify(data)
 
 
 if __name__ == "__main__":
